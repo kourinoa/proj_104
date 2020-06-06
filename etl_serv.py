@@ -6,6 +6,7 @@ import json
 
 ss = myutils.get_session()
 
+
 def get_page():
     list_url = "https://www.104.com.tw/jobs/search/list?ro=0&kwop=7&keyword=AI&order=15&asc=0&page=10&mode=s&jobsource=2018indexpoc"
 
@@ -43,24 +44,26 @@ def get_total_page(text) -> int:
 def get_job_content(job_url):
     job_id = myutils.get_jobid_by_url(job_url)
     content_rul = "https://www.104.com.tw/job/ajax/content/" + job_id
-# 製作header
+    # 製作header
     header = myutils.get_header()
-    header["Accept"]="application/json, text/plain, */*"
-    header["Accept-Language"]= "zh-tw"
-    header["Host"]= "www.104.com.tw"
-    header["Referer"]= job_url
-    header["Accept-Encoding"]= "br, gzip, deflate"
-    header["Connection"]= "keep-alive"
+    header["Accept"] = "application/json, text/plain, */*"
+    header["Accept-Language"] = "zh-tw"
+    header["Host"] = "www.104.com.tw"
+    header["Referer"] = job_url
+    header["Accept-Encoding"] = "br, gzip, deflate"
+    header["Connection"] = "keep-alive"
     req = ss.get(url=content_rul, headers=header)
     print(json.dumps(json.loads(req.text), indent=4, ensure_ascii=False))
     content_data = json.loads(req.text)
     job_content = {}
-    job_content["jobName"] = content_data["data"]["header"]["jobName"]
+    job_content["job_name"] = content_data["data"]["header"]["jobName"]
     job_content["company_name"] = content_data["data"]["header"]["custName"]
     job_content["company_url"] = content_data["data"]["header"]["custUrl"]
     job_content["contact"] = content_data["data"]["contact"]
-
-
+    job_content["skill"] = content_data["data"]["condition"]["specialty"]
+    job_content["job_detail"] = content_data["data"]["jobDetail"]["jobDescription"]
+    print(job_content)
+    return job_content
 
 
 def main():
@@ -89,5 +92,9 @@ def main():
     # print(len([bs.select("a.js-job-link") for bs in soup.select("div.b-block__left")]))
 
 
+def test():
+    get_job_content("https://www.104.com.tw/job/6t2t0?jobsource=2018indexpoc")
+
 if __name__ == "__main__":
-    main()
+    # main()
+    test()
