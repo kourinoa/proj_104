@@ -19,7 +19,7 @@ class Job(declarative_base()):
 
 
     """
-    CREATE TABLE `data`.`Untitled`  (
+    CREATE TABLE `data`.`job`  (
       `id` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '編號',
       `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '職位名稱',
       `company_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '公司名稱',

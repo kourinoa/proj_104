@@ -20,7 +20,7 @@ class Contact(declarative_base()):
     create_user = Column(String)
 
     """
-    CREATE TABLE `data`.`Untitled`  (
+    CREATE TABLE `data`.`contact`  (
   `id` int(0) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '流水號',
   `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '聯絡人名稱',
   `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '郵箱',
