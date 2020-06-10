@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh">
+    <head>
+        <meta charset="UTF-8">
+        <title>Index page</title>
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}"/>
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+        <script src="{{ url_for('static',filename='js/bootstrap.bundle.js') }}"></script>
+    </head>
+    <body>
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="bg-light">
+                <h2>hello</h2>
+                    <form method="post" action="">
+                        <div class="row">
+                            <div class="col">
+                                <label for="keyword">關鍵字</label>
+                                <input id="keyword" name="keyword" class="form-control">
+                            </div>
+                            <div class="col">
+                                <label for="pagenum">頁數</label>
+                                <input id="pagenum" name="pagenum" class="form-control">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <button type="submit" class="btn btn-primary">送出</button>
+                            </div>
+
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+
+    </body>
+</html>

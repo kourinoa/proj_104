@@ -1,4 +1,5 @@
 import requests
+import datetime
 
 
 def get_session() -> requests.session:
@@ -17,8 +18,12 @@ def get_jobid_by_url(job_url) -> str:
     return a
 
 
+def get_datetime_str() -> str:
+    return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+
 def main():
-    get_jobid_by_url("http://www.104.com.tw/job/6iq7d?jobsource=2018indexpoc")
+    print(get_datetime_str())
 
 
 if __name__ == "__main__":
