@@ -6,12 +6,14 @@ import time
 import random
 import json
 from service import job_service
+from urllib import parse
 
 ss = myutils.get_session()
 first_url = "https://www.104.com.tw/jobs/search/?ro=0&keyword={}&jobsource=2018indexpoc"
-keyword = "AI"
+# keyword = "AI"
 
-def get_page(page_num: int) -> dict:
+
+def get_page(keyword, page_num: int) -> dict:
     header = myutils.get_header()
     header["Accept"] = "application/json, text/javascript, */*; q=0.01"
     header["Accept-Encoding"] = "gzip, deflate, br"
@@ -23,7 +25,7 @@ def get_page(page_num: int) -> dict:
     header["Sec-Fetch-Mode"] = "cors"
     header["Sec-Fetch-Site"] = "same-origin"
     header["X-Requested-With"] = "XMLHttpRequest"
-    global keyword
+    # global keyword
 
     list_url = "https://www.104.com.tw/jobs/search/list?ro=0&kwop=7&keyword={}&order=15&asc=0&page={}&mode=s&jobsource=2018indexpoc"
     list_url = list_url.format(keyword, str(page_num))
@@ -104,6 +106,58 @@ def get_job_content(job_url):
     return job_content
 
 
+def do_search(key_word: str, page_num):
+    global first_url
+    page_num = int(page_num)
+    if key_word is None or len(key_word) == 0:
+        return "error keyword"
+    if page_num is None:
+        return "page_num"
+    # 取得第一頁資料
+    first_page_url = first_url.format(key_word)
+    req = ss.get(url=first_page_url,
+                 headers=myutils.get_header())
+    soup = get_soup(req.text)
+    job_data = {}
+    for idx, bs in enumerate(soup.select("article div.b-block__left")):
+        # print(bs)
+        # print(idx, idx, idx)
+        job = bs.select("a.js-job-link")
+        for j in job:
+            # print("url", j["href"], idx)
+            if j["href"].find("hotjob_chr") == -1:
+                job_data[myutils.get_jobid_by_url(j["href"])] = {"url": "https:" + j["href"], "job_name": j.text}
+
+    job_result = []
+    for job in job_data:
+        job_url = job_data[job]["url"]
+        # print(job_url)
+        job_content = get_job_content(job_url)
+        job_service.add_job(job_content)
+        job_result.append(job_content)
+    # 取得第二頁以後資料
+    key_word = parse.quote(key_word)
+    first_url = first_url.format(key_word)
+    if page_num != 0:
+        for i in range(2, page_num + 1):
+            job_data = get_page(keyword=key_word, page_num=i)
+            for job in job_data:
+                job_url = job_data[job]["url"]
+                # print(job_url)
+                sleep_time = random.uniform(1, 2)
+                print("sleep {} sec".format(sleep_time))
+                time.sleep(sleep_time)
+                job_content = get_job_content(job_url)
+                job_service.add_job(job_content)
+                job_result.append(job_content)
+    write_json_file(job_result, str(time.time())+"job.json")
+
+
+def write_json_file(json_data, filename):
+    with open("./dict/{}".format(filename), "w") as file:
+        file.write(json.dumps(json_data))
+
+
 def main():
     global first_url
     global keyword
@@ -135,7 +189,6 @@ def main():
         job_service.add_job(job_content)
         job_result.append(job_content)
 
-
     for i in range(2, page_num + 1):
         job_data = get_page(i)
         for job in job_data:
@@ -148,7 +201,7 @@ def main():
             job_service.add_job(job_content)
             job_result.append(job_content)
     # print(len([bs.select("a.js-job-link") for bs in soup.select("div.b-block__left")]))
-
+# 計算技能名稱出現次數
     skill_dict = defaultdict(lambda: 0)
     for job in job_result:
         for skill in job["skill"]:
