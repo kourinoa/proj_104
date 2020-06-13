@@ -7,13 +7,13 @@ import random
 import json
 from service import job_service
 from urllib import parse
+import pandas as pd
 
 ss = myutils.get_session()
 first_url = "https://www.104.com.tw/jobs/search/?ro=0&keyword={}&jobsource=2018indexpoc"
-# keyword = "AI"
+keyword = "AI"
 
-
-def get_page(keyword, page_num: int) -> dict:
+def get_page(page_num: int) -> dict:
     header = myutils.get_header()
     header["Accept"] = "application/json, text/javascript, */*; q=0.01"
     header["Accept-Encoding"] = "gzip, deflate, br"
@@ -25,7 +25,7 @@ def get_page(keyword, page_num: int) -> dict:
     header["Sec-Fetch-Mode"] = "cors"
     header["Sec-Fetch-Site"] = "same-origin"
     header["X-Requested-With"] = "XMLHttpRequest"
-    # global keyword
+    global keyword
 
     list_url = "https://www.104.com.tw/jobs/search/list?ro=0&kwop=7&keyword={}&order=15&asc=0&page={}&mode=s&jobsource=2018indexpoc"
     list_url = list_url.format(keyword, str(page_num))
@@ -150,12 +150,7 @@ def do_search(key_word: str, page_num):
                 job_content = get_job_content(job_url)
                 job_service.add_job(job_content)
                 job_result.append(job_content)
-    write_json_file(job_result, str(time.time())+"job.json")
-
-
-def write_json_file(json_data, filename):
-    with open("./dict/{}".format(filename), "w") as file:
-        file.write(json.dumps(json_data))
+    myutils.write_json_file(job_result, str(int(time.time())) + "job.json")
 
 
 def main():
@@ -201,7 +196,7 @@ def main():
             job_service.add_job(job_content)
             job_result.append(job_content)
     # print(len([bs.select("a.js-job-link") for bs in soup.select("div.b-block__left")]))
-# 計算技能名稱出現次數
+    # 計算技能名稱出現次數
     skill_dict = defaultdict(lambda: 0)
     for job in job_result:
         for skill in job["skill"]:
@@ -213,9 +208,41 @@ def main():
 
 
 def test():
-    get_job_content("https://www.104.com.tw/job/6t2t0?jobsource=2018indexpoc")
+    filename = "1591868886job.json"
+    json_data = json.load(open("./dict/{}".format(filename), "r"))
+    print(json_data[1:2])
+    skill_dict = defaultdict(lambda: 0)
+    # 計算技能出現次數
+    for job in json_data:
+        for skill in job["skill"]:
+            skill_dict[skill["description"]] += 1
+    print(skill_dict)
+    for job in json_data:
+        con_str = ""
+        for k, v in job["contact"].items():
+            con_str += "{}: {} ".format(k, v)
+        job["contact"] = con_str
+        # 沒有技能要求的職位全部技能標註0
+        if len(job["skill"]) == 0:
+            for skill in skill_dict:
+                job[skill] = 0
+        # 職位有要求的技能標註1，否則標註0
+        for skill in skill_dict:
+            for s in job["skill"]:
+                if skill in s.values():
+                    job[skill] = 1
+                else:
+                    job[skill] = 0
+        job["skill"] = None
+
+    # print(json_data)
+
+    df = pd.read_json(json.dumps(json_data))
+    df.fillna(0)
+    df.to_csv("./dict/{}.csv".format(filename[:filename.find(".")]), encoding="utf_8_sig")
+    print(df[1:2])
 
 
 if __name__ == "__main__":
-    main()
-    # test()
+    # main()
+    test()
