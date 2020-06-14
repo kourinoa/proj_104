@@ -1,7 +1,6 @@
 import requests
 import datetime
-import json
-import os
+
 
 def get_session() -> requests.session:
     return requests.session()
@@ -21,15 +20,6 @@ def get_jobid_by_url(job_url) -> str:
 
 def get_datetime_str() -> str:
     return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-
-def write_json_file(json_data, filename):
-    try:
-        with open("../dict/{}".format(filename), "w") as file:
-            file.write(json.dumps(json_data, ensure_ascii=False))
-    except FileNotFoundError as e:
-        print(e)
-        print(os.getcwd())
 
 
 def main():
