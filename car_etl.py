@@ -1,6 +1,7 @@
 import myutils
 from bs4 import BeautifulSoup
 import json
+from service import mongo_service
 
 
 def search_page(cata, input_data, action, url, ss):
@@ -18,12 +19,13 @@ def search_page(cata, input_data, action, url, ss):
     searchreq = ss.get(url + action, params=input_data, headers=search_header)
     print(searchreq.url)
     soup2 = myutils.get_soup(searchreq.text)
-    meta_search(ss, searchreq.url, cata)
+    total_car_num = soup2.select_one("div .infol.mei-u em").text
+    meta_search(ss, searchreq.url, cata, total_car_num)
     # print("__________________________")
     # print(soup2.prettify())
 
 
-def meta_search(ss, url, cata):
+def meta_search(ss, url, cata, total_car_num):
     search_header = myutils.get_header()
     search_header["Content-Type"] = "application/x-www-form-urlencoded;charset=UTF-8"
     search_header["Accept"] = "*/*"
@@ -42,11 +44,11 @@ def meta_search(ss, url, cata):
     req = ss.post(url="https://tw.usedcar.yahoo.com/search/search_services", headers=search_header, data=post_data)
     json_data = json.loads(req.text)
     print("meta search---------------------")
-    print(json_data)
-    car_search(ss, url, cata)
+    # print(json_data)
+    car_search(ss, url, cata, total_car_num)
 
 
-def car_search(ss, url, cata):
+def car_search(ss, url, cata, total_car_num):
     search_header = myutils.get_header()
     search_header["Content-Type"] = "application/x-www-form-urlencoded;charset=UTF-8"
     search_header["Accept"] = "*/*"
@@ -65,7 +67,7 @@ def car_search(ss, url, cata):
                  "unspc": 0,
                  "areaa": "tw",
                  "sort": 3,
-                 "total": 4663,
+                 "total": total_car_num,
                  "cp": 1,
                  "ppa": 30,
                  "pa": 10,
@@ -75,7 +77,17 @@ def car_search(ss, url, cata):
     req = ss.post(url="https://tw.usedcar.yahoo.com/search/search_services", headers=search_header, data=post_data)
     json_data = json.loads(req.text)
     print("car search---------------------")
-    print(json_data)
+    # print(json_data)
+
+    for car in json_data["data"][1:2]:
+        url = car["mlink"]
+        r = ss.get(url, headers=myutils.get_header())
+        print(myutils.get_soup(r.text).prettify())
+        # car["_id"] = car.pop("mid")
+        # car.remove_key("mid")
+        # print(car)
+        # mongo_service.insert_data("data", "car", car)
+
 
 
 def main():
