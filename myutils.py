@@ -2,7 +2,12 @@ import requests
 import datetime
 import json
 import os
+from urllib import parse
 from bs4 import BeautifulSoup
+
+
+def url_encoding(url: str) -> str:
+    return parse.quote(url)
 
 
 def get_soup(html: str) -> BeautifulSoup:
@@ -38,8 +43,18 @@ def write_json_file(json_data, filename):
         print(os.getcwd())
 
 
+def write_pic_file(file_path: str, pic):
+    d = file_path[0:file_path.rfind("/")]
+    if not os.path.exists(d):
+        os.makedirs(d)
+    with open(file=file_path, mode="wb") as file:
+        file.write(pic)
+        return file_path
+
+
 def main():
-    print(get_datetime_str())
+    a = "./pic/benz/sclass/s350/lkjd.txt"
+    write_pic_file(a, "df")
 
 
 if __name__ == "__main__":
