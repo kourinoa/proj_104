@@ -82,12 +82,71 @@ def car_search(ss, url, cata, total_car_num):
     for car in json_data["data"][1:2]:
         url = car["mlink"]
         r = ss.get(url, headers=myutils.get_header())
-        print(myutils.get_soup(r.text).prettify())
+        print("get car detail : url", url)
+        car_soup = myutils.get_soup(r.text)
+        print(car_soup.prettify())
+        # 車輛廠牌分類
+        car_brand = [a.text for a in car_soup.select("div.itemhd a")]
+        car["新舊"] = car_brand[0]
+        car["車型"] = car_brand[1]
+        car["廠牌"] = car_brand[2].replace("/", "sl")
+        car["型號a"] = car_brand[3]
+        car["型號"] = car_brand[4]
+        # 車輛狀態
+        car_status = []
+        for i in car_soup.select("div#ycoptions ul#itemAttrs li")[0:3]:
+            for j in i:
+                car_status.extend(j.select("td"))
+        print("car_status", car_status)
+        for i in range(0, len(car_status), 2):
+            if "hide" not in car_status[i]["class"]:
+                car[car_status[i].text] = car_status[i + 1].text
+        # 車輛配備
+        car_equipment = car_soup.select("div#ycoptions ul#itemAttrs li.col2 td span")
+        print("car_equipment", car_equipment)
+        for i in car_equipment:
+            car[i.text] = 1
+        # 車輛圖案
+        car_pic = car_soup.select_one("div#ycitemslideshow div.sft input")
+        car_pic = car_pic["value"].replace("'", '"')  # 取value屬性的值，接着用雙引號取代單引號
+        car_pic = json.loads(car_pic)  # 將文字轉成物件
+        car_pic = [pic["i"] for pic in car_pic]
+        print("car_pic", car_pic)
+        car["pic"] = car_pic
+        # get_picture(ss, car_pic["href"])
+        # 寫入圖片到本地
+        pic_path = "./pic/{}/{}/{}/{}/{}_{}_{}_{}".format(car["廠牌"], car["型號a"], car["型號"], car["auto_build_year"], car["廠牌"], car["型號a"], car["型號"], car["auto_build_year"])
+        car["pic"] = []
+        for i, pic in enumerate(car_pic):
+            q = ss.get(url=pic, headers=myutils.get_header())
+            car["pic"].append({"url": pic, "file_path": myutils.write_pic_file(pic_path + "_{}.jpg".format(i), q.content)})
+        print(car)
         # car["_id"] = car.pop("mid")
         # car.remove_key("mid")
         # print(car)
         # mongo_service.insert_data("data", "car", car)
 
+
+# def get_picture(ss, ref):
+#     header = myutils.get_header()
+#     header["Content-Type"] = "application/x-www-form-urlencoded;charset=UTF-8"
+#     header["Accept"] = "*/*"
+#     header["Host"] = "tw.usedcar.yahoo.com"
+#     header["Accept-Language"] = "zh-tw"
+#     header["Accept-Encoding"] = "br,gzip,deflate"
+#     header["Origin"] = "https://tw.usedcar.yahoo.com"
+#     header["Referer"] = myutils.url_encoding(ref)
+#     header["Connection"] = "keep-alive"
+#     header["Content-Length"] = "110"
+#     header["X-Requested-With"] = "XMLHttpRequest"
+#     post_data = {"MIME 類型": "application/x-www-form-urlencoded; charset=UTF-8",
+#                  "undedup": 0,
+#                  "unspc": 0,
+#                  "category_id": 12012841,
+#                  "price": 2980000.00,
+#                  "action": "itemADs"}
+#     r = ss.post(url="https://tw.usedcar.yahoo.com/item/characteristic_item", headers=header, data=post_data)
+#     print("get pic", json.loads(r.text)["data"])
 
 
 def main():
