@@ -1,5 +1,6 @@
 from pymongo import MongoClient
 from bson.objectid import ObjectId
+import myutils
 
 db_user = "admin"
 db_pswd = "123456"
@@ -7,12 +8,31 @@ db_domain = "localhost"
 db_port = "27017"
 db_url = "mongodb://{}:{}@{}:{}/".format(db_user, db_pswd, db_domain, db_port)
 
+conn = None
+
+
+def find_by_id(idd, db_name="data", collection="car"):
+    db = get_mongo_conn()[db_name]
+    coll = db[collection]
+    result = coll.find_one({"_id": idd})
+    return result
+
+
+def is_exist(idd, db_name="data", collection="car"):
+    db = get_mongo_conn()[db_name]
+    coll = db[collection]
+    return coll.find_one({"_id": idd}, {"_id": 1})
+
 
 def get_mongo_conn() -> MongoClient:
-    return MongoClient(db_url)
+    global conn
+    if conn is None:
+        conn = MongoClient(db_url)
+    return conn
 
 
 def insert_data(db_name, collection: str, json_data):
+    json_data["create_time"] = myutils.get_mongo_time()
     db = get_mongo_conn()[db_name]
     coll = db[collection]
     coll.insert_one(json_data)
@@ -57,8 +77,20 @@ def see_result(cursor):
 def main():
     # test = {"_id": "1", "name": "allen", "age": 88, "gender": "M"}
     # insert_data("data", "person", test)
-    cursor = get_mongo_conn().data.car.find({})
-    see_result(cursor)
+    # cursor = get_mongo_conn().data.car.find({})
+    f_list = []
+    e_list = []
+    for i in range(1, 20):
+        t1 = myutils.get_mongo_time()
+        v = find_by_id("100804245348")
+        t2 = myutils.get_mongo_time()
+        v2 = is_exist("100804245348")
+        t3 = myutils.get_mongo_time()
+        f_list.append(float(str(t2-t1)[-6:]))
+        e_list.append(float(str(t3-t2)[-6:]))
+        # print(f_list)
+        # print(e_list)
+    print("find by id time:", sum(f_list)/len(f_list), " exist time : ", sum(e_list)/len(e_list))
 
 
 if __name__ == "__main__":

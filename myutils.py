@@ -30,7 +30,15 @@ def get_jobid_by_url(job_url) -> str:
     return a
 
 
+def get_mongo_time() -> datetime.datetime.utcnow:
+    return datetime.datetime.utcnow()
+
+
 def get_datetime_str() -> str:
+    '''
+    取得當前時間，mysql格式
+    :return:
+    '''
     return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
