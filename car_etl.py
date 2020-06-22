@@ -85,7 +85,7 @@ def car_search(ss, url, cata, total_car_num, kw):
         post_data["catid"] = "000000515224"
     print("car search---------------------")
     # print(json_data)
-    total_page = int(total_car_num) // each_page
+    total_page = (int(total_car_num) // each_page) + 1
     for page in range(1, total_page + 1):
         print("total_page:", total_page, "current page :", page)
         post_data["cp"] = page
@@ -160,7 +160,7 @@ def car_search(ss, url, cata, total_car_num, kw):
 
 
 def download_pic(ss, car):
-    pic_path = "./pic/{}/{}/{}/{}/{}_{}_{}_{}".format(car["廠牌"], car.get("型號a", "0"), car.get("型號", "0"), car["auto_build_year"],
+    pic_path = "./pic/{}/{}/{}/{}/{}/{}_{}_{}_{}".format(car["廠牌"], car.get("型號a", "0"), car.get("型號", "0"), car["auto_build_year"], car["mid"],
                                                       car["廠牌"], car.get("型號a", "0"), car.get("型號", "0"), car["auto_build_year"])
     car_pic = car.pop("pic")
     car["pic"] = []
