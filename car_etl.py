@@ -94,8 +94,14 @@ def car_search(ss, url, cata, total_car_num, kw):
             json_data = json.loads(req.text)
         except Exception as err:
             print("-"*30)
-            print(req.text)
-            raise err
+            file_path = "./err/msg/{}.txt".format(kw+str(page))
+            myutils.write_text_file(file_path=file_path, content=req.text)
+            # error_log = {
+            #     "err": err,
+            #     "data": file_path
+            # }
+            # mongo_service.insert_data(collection="err", db_name="data", json_data=json.dumps(error_log))
+            # raise err
         try:
             for car in json_data["data"][1:]:
                 if mongo_service.is_exist(car["mid"]) is not None:
@@ -154,9 +160,14 @@ def car_search(ss, url, cata, total_car_num, kw):
             time.sleep(page_sleep_time)
         except Exception as err:
             print("-" * 20)
-            print(car)
-            print("car pic", car_pic)
-            raise err
+            # print(car)
+            # print("car pic", car_pic)
+            error_log = {
+                "err": err,
+                "data": car
+            }
+            mongo_service.insert_data(collection="err", json_data=error_log, db_name="data")
+            # raise err
 
 
 def download_pic(ss, car):

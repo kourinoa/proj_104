@@ -1,6 +1,10 @@
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 import myutils
+import pandas as pd
+import json
+import datetime
+
 
 db_user = "admin"
 db_pswd = "123456"
@@ -77,20 +81,30 @@ def see_result(cursor):
 def main():
     # test = {"_id": "1", "name": "allen", "age": 88, "gender": "M"}
     # insert_data("data", "person", test)
-    # cursor = get_mongo_conn().data.car.find({})
+    cursor = get_mongo_conn().data.car.find_one({})
     f_list = []
     e_list = []
-    for i in range(1, 20):
-        t1 = myutils.get_mongo_time()
-        v = find_by_id("100804245348")
-        t2 = myutils.get_mongo_time()
-        v2 = is_exist("100804245348")
-        t3 = myutils.get_mongo_time()
-        f_list.append(float(str(t2-t1)[-6:]))
-        e_list.append(float(str(t3-t2)[-6:]))
-        # print(f_list)
-        # print(e_list)
-    print("find by id time:", sum(f_list)/len(f_list), " exist time : ", sum(e_list)/len(e_list))
+    # for i in range(1, 20):
+    #     t1 = myutils.get_mongo_time()
+    #     v = find_by_id("100804245348")
+    #     t2 = myutils.get_mongo_time()
+    #     v2 = is_exist("100804245348")
+    #     t3 = myutils.get_mongo_time()
+    #     f_list.append(float(str(t2-t1)[-6:]))
+    #     e_list.append(float(str(t3-t2)[-6:]))
+    #     # print(f_list)
+    #     # print(e_list)
+    # print("find by id time:", sum(f_list)/len(f_list), " exist time : ", sum(e_list)/len(e_list))
+    # print(cursor)
+    # datetime.datetime.strftime()
+    cursor["create_time"] = cursor["create_time"].strftime("%Y-%m-%d %H:%M:%S")
+    # for key in cursor:
+    #     if type(cursor[key]) != str:
+    #         print(key, type(cursor[key]))
+    j = json.dumps(cursor)
+    df = pd.read_json(j)
+    print(df[:1])
+
 
 
 if __name__ == "__main__":

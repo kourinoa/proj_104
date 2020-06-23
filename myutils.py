@@ -60,6 +60,14 @@ def write_pic_file(file_path: str, pic):
         return file_path
 
 
+def write_text_file(file_path: str, content):
+    d = file_path[0:file_path.rfind("/")]
+    if not os.path.exists(d):
+        os.makedirs(d)
+    with open(file=file_path, mode="w") as file:
+        file.write(content)
+
+
 def main():
     a = "./pic/benz/sclass/s350/lkjd.txt"
     write_pic_file(a, "df")
