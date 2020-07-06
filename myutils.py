@@ -91,7 +91,22 @@ def uni_form_data(ori_data: dict) -> dict:
             # 去除廠牌的中文顯示
             if key == "廠牌":
                 tmp = ori_data[key]
-                uniform_data[key_mappping[key]] = tmp[:tmp.find("[s]")]
+                uniform_data[key_mappping[key]] = tmp[:tmp.find("[sl]")]
+            # 去除cc
+            if key == "排氣量":
+                tmp = ori_data[key]
+                tmp = tmp.replace("cc", "")
+                uniform_data[key_mappping[key]] = tmp
+            if key == "price":
+                tmp = ori_data[key]
+                try:
+                    tmp = tmp.replace(",", "").strip()
+                    tmp = round(float(tmp)/10000, 1)
+                except ValueError as err:
+                    print(tmp, "_"*20)
+                    tmp = None
+                    # raise err
+                uniform_data[key_mappping[key]] = tmp
     for mkey in missing_key:
         uniform_data[mkey] = None
     uniform_data["from"] = "yahoo_by_w"

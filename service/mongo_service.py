@@ -79,7 +79,7 @@ def see_result(cursor):
 def main():
     # test = {"_id": "1", "name": "allen", "age": 88, "gender": "M"}
     # insert_data("data", "person", test)
-    cursor = get_mongo_conn().data.car.find({})
+    cursor = get_mongo_conn().data.car.find({})#.limit(10)
     for item in cursor:
         result = insert_data("data", "uniform", myutils.uni_form_data(item))
         print(item["_id"], "result", result, "transform success!")
