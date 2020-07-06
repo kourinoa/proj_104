@@ -5,7 +5,6 @@ import pandas as pd
 import json
 import datetime
 
-
 db_user = "admin"
 db_pswd = "123456"
 db_domain = "localhost"
@@ -35,15 +34,14 @@ def get_mongo_conn() -> MongoClient:
     return conn
 
 
-def insert_data(db_name, collection: str, json_data):
+def insert_data(db_name: str, collection: str, json_data):
     json_data["create_time"] = myutils.get_mongo_time()
     db = get_mongo_conn()[db_name]
     coll = db[collection]
-    coll.insert_one(json_data)
+    return coll.insert_one(json_data)
 
 
 def see_result(cursor):
-
     title = ""
     content = ""
     result_set = [d for d in cursor]
@@ -81,7 +79,10 @@ def see_result(cursor):
 def main():
     # test = {"_id": "1", "name": "allen", "age": 88, "gender": "M"}
     # insert_data("data", "person", test)
-    cursor = get_mongo_conn().data.car.find_one({})
+    cursor = get_mongo_conn().data.car.find({})
+    for item in cursor:
+        result = insert_data("data", "uniform", myutils.uni_form_data(item))
+        print(item["_id"], "result", result, "transform success!")
     f_list = []
     e_list = []
     # for i in range(1, 20):
@@ -97,14 +98,9 @@ def main():
     # print("find by id time:", sum(f_list)/len(f_list), " exist time : ", sum(e_list)/len(e_list))
     # print(cursor)
     # datetime.datetime.strftime()
-    cursor["create_time"] = cursor["create_time"].strftime("%Y-%m-%d %H:%M:%S")
     # for key in cursor:
     #     if type(cursor[key]) != str:
     #         print(key, type(cursor[key]))
-    j = json.dumps(cursor)
-    df = pd.read_json(j)
-    print(df[:1])
-
 
 
 if __name__ == "__main__":

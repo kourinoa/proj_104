@@ -68,9 +68,39 @@ def write_text_file(file_path: str, content):
         file.write(content)
 
 
+def uni_form_data(ori_data: dict) -> dict:
+    key_mappping = {"廠牌": "brand", "型號a": "type", "mlink": "link",
+                    "排氣量": "cc", "引擎燃料": "gas", "變速系統": "sys",
+                    "外觀車色": "color", "auto_drive_km": "miles", "auto_build_year": "year",
+                    "price": "price", "location": "locate", "poster": "seller",
+                    "電動座椅": "auto_chair", "多媒體影音": "media", "倒車顯影": "back_screen",
+                    "天窗": "window", "HID氙氣頭燈": "hid", "恆溫空調": "air_con",
+                    "六安全氣囊以上": "safe_bag", "免鑰匙啟動": "keyless", "導航系統": "gps",
+                    "LED頭燈": "led", "防滑循跡系統": "trc", "車道偏移警示": "ldws",
+                    "自動煞車系統": "aeb", "定速": "ss", "抬頭顯示器": "hud"}
+
+    missing_key = ["power", "l_chair", "cd", "back_radar", "abs", "alu", "tcs", "acc", "auto_windows", "auto_side",
+                   "alert", "tpms", "es", "isofix", "multi_wheel", "auto_park", "people", "silde_door", "female_used",
+                   "turbo", "warranty", "fog_lights", "blind_spot", "electric_tailgate", "whole_window", "lcd",
+                   "shift_paddles", "epb"]
+    uniform_data = {}  # 重新整理過key值的資料
+    for key in ori_data:
+        # print("find key :", key, "result :", )
+        if key_mappping.get(key, None) is not None:
+            uniform_data[key_mappping[key]] = ori_data[key]
+            # 去除廠牌的中文顯示
+            if key == "廠牌":
+                tmp = ori_data[key]
+                uniform_data[key_mappping[key]] = tmp[:tmp.find("[s]")]
+    for mkey in missing_key:
+        uniform_data[mkey] = None
+    uniform_data["from"] = "yahoo_by_w"
+    return uniform_data
+
+
 def main():
-    a = "./pic/benz/sclass/s350/lkjd.txt"
-    write_pic_file(a, "df")
+    a = "Mercedes-Benz[s]賓士"
+    print(a[:a.find("[s]")])
 
 
 if __name__ == "__main__":
