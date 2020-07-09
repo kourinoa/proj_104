@@ -114,15 +114,17 @@ def uni_form_data(ori_data: dict) -> dict:
 
 
 def main():
-    a = ['54812', '54804', '54805', '54806', '54801', '54802', '54799', '65342', '49523']
-    tmp = ""
-    for i, j in enumerate(a):
-        tmp += j
-        if i % 4 == 0 or i % len(a) == 0:
-            print(tmp)
-            tmp = ""
-        else:
-            tmp += ","
+    # a = ['54812', '54804', '54805', '54806', '54801', '54802', '54799', '65342', '49523']
+    # tmp = ""
+    # for i, j in enumerate(a):
+    #     tmp += j
+    #     if i % 4 == 0 or i % len(a) == 0:
+    #         print(tmp)
+    #         tmp = ""
+    #     else:
+    #         tmp += ","
+    a = "adbdd"
+    print(a[:a.find("/")])
 
 
 if __name__ == "__main__":
