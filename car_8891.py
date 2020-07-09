@@ -49,10 +49,10 @@ def get_new_car_pic(url: str):
     :param url: 範例 https://c.8891.com.tw/audi/a1-sportback/HDPhoto.html
     :return: 該車型所有圖片url
     """
-    pic_url_list = []
+    pic_url_list = []  # 放圖片url
     ss = myutils.get_session()  # 可以換成requests.session()
-    res = ss.get(url=url, headers=myutils.get_header())
-    print(res.url)
+    res = ss.get(url=url, headers=myutils.get_header())  # header裡只有user agent
+    print("get response from", res.url)
     # print(req.text)
     scriptsoup = myutils.get_soup(res.text).find_all('script', type="text/javascript")
     for script in scriptsoup:
@@ -71,7 +71,8 @@ def get_new_car_pic(url: str):
                 num_of_photo = 7
                 if idx % num_of_photo == 0 or idx % len(pid_list) == 0:
                     # print(pidstr)
-                    r = ss.get(url=photo_lib_url + myutils.url_encoding(pidstr), headers=myutils.get_header())
+                    # 向https://c.8891.com.tw/photoLibrary-ajaxList.html 發出請求
+                    r = ss.get(url=photo_lib_url + myutils.url_encoding(pidstr), headers=myutils.get_header())  # 網址裡的,需要轉換編碼
                     # print(r.url, "photo rul result:")
                     # print(r.text)
                     try:
@@ -82,7 +83,7 @@ def get_new_car_pic(url: str):
                         print(r.text)
 
                     for photo_json in json_obj:
-                        photo_url = photo_json["smallPic"].replace(r"\/", "/")
+                        photo_url = photo_json["smallPic"].replace(r"\/", "/")  # 把反斜線弄掉
                         pic_url_list.append(photo_url)
                     pidstr = ""
                 else:
