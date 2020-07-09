@@ -6,7 +6,7 @@ import time
 import random
 
 
-def search_page( cata, input_data, action, url, ss, kw=""):
+def search_page(cata, input_data, action, url, ss, kw=""):
     if len(kw) == 0:
         input_data["catb"] = cata
     input_data["kw"] = kw
@@ -50,7 +50,7 @@ def meta_search(kw, ss, url, cata, total_car_num):
     json_data = json.loads(req.text)
     print("meta search---------------------")
     # print(json_data)
-    car_search( ss, url, cata, total_car_num, kw)
+    car_search(ss, url, cata, total_car_num, kw)
 
 
 def car_search(ss, url, cata, total_car_num, kw):
@@ -81,7 +81,7 @@ def car_search(ss, url, cata, total_car_num, kw):
                  "vmode": 0,
                  "action": "srplistquery",
                  "kw": kw}
-    if len(kw) >0 :
+    if len(kw) > 0:
         post_data["catid"] = "000000515224"
     print("car search---------------------")
     # print(json_data)
@@ -90,11 +90,12 @@ def car_search(ss, url, cata, total_car_num, kw):
         print("total_page:", total_page, "current page :", page)
         post_data["cp"] = page
         try:
-            req = ss.post(url="https://tw.usedcar.yahoo.com/search/search_services", headers=search_header, data=post_data)
+            req = ss.post(url="https://tw.usedcar.yahoo.com/search/search_services", headers=search_header,
+                          data=post_data)
             json_data = json.loads(req.text)
         except Exception as err:
-            print("-"*30)
-            file_path = "./err/msg/{}.txt".format(kw+str(page))
+            print("-" * 30)
+            file_path = "./err/msg/{}.txt".format(kw + str(page))
             myutils.write_text_file(file_path=file_path, content=req.text)
             # error_log = {
             #     "err": err,
@@ -171,8 +172,10 @@ def car_search(ss, url, cata, total_car_num, kw):
 
 
 def download_pic(ss, car):
-    pic_path = "./pic/{}/{}/{}/{}/{}/{}_{}_{}_{}".format(car["廠牌"], car.get("型號a", "0"), car.get("型號", "0"), car["auto_build_year"], car["mid"],
-                                                      car["廠牌"], car.get("型號a", "0"), car.get("型號", "0"), car["auto_build_year"])
+    pic_path = "./pic/{}/{}/{}/{}/{}/{}_{}_{}_{}".format(car["廠牌"], car.get("型號a", "0"), car.get("型號", "0"),
+                                                         car["auto_build_year"], car["mid"],
+                                                         car["廠牌"], car.get("型號a", "0"), car.get("型號", "0"),
+                                                         car["auto_build_year"])
     car_pic = car.pop("pic")
     car["pic"] = []
     for i, pic in enumerate(car_pic):
@@ -201,8 +204,7 @@ def download_pic(ss, car):
 #     r = ss.post(url="https://tw.usedcar.yahoo.com/item/characteristic_item", headers=header, data=post_data)
 #     print("get pic", json.loads(r.text)["data"])
 
-
-def main():
+def yahoo_car():
     url = "https://tw.usedcar.yahoo.com"
     ss = myutils.get_session()
     req = ss.get(url=url, headers=myutils.get_header())
@@ -222,6 +224,107 @@ def main():
     print("input data", input_data)
     for brand in brand_dict:
         search_page("000000515224", input_data, action, url, ss, kw=brand)
+
+
+def test():
+    print("start")
+    url = "https://c.8891.com.tw"
+    ss = myutils.get_session()
+    # get https://c.8891.com.tw/Models
+    req = ss.get(url=url+"/Models", headers=myutils.get_header())
+    soup = myutils.get_soup(req.text)
+    # print(soup.select("div.scroll-area"))
+    # 獲取車輛品牌清單
+    new_car_brand_list = []
+    for a in soup.select("div.scroll-area li"):
+        new_car_brand = {}
+        new_car_brand["country"] = a["country"]
+        new_car_brand["brand_id"] = a["id"]
+        atag = a.select_one("a")
+        new_car_brand["brand"] = atag.text.strip()
+        new_car_brand["link"] = url + atag["href"]
+        new_car_brand_list.append(new_car_brand)
+        # print("-" * 20)
+        # print(a)
+        # print("-"*20)
+        # print()
+    # soup.select("scroll-area")
+    # print(new_car_brand_list)
+    #########################################################################
+    #########################################################################
+    #########################################################################
+    #########################################################################
+    header = myutils.get_header()
+    header["referer"] = "https://c.8891.com.tw/Models"
+# sec-fetch-dest: document
+# sec-fetch-mode: navigate
+# sec-fetch-site: same-origin
+# sec-fetch-user: ?1
+# service-worker-navigation-preload: true
+# upgrade-insecure-requests: 1
+    for brand in new_car_brand_list:
+        req = ss.get(url=brand["link"], headers=header)
+        brandsoup = myutils.get_soup(req.text)
+        # 獲取車型清單
+        car_type_dict = {t.text: t["href"] for t in brandsoup.select("div.brand-list-main.IndexKindContent a.brand-list-type")}
+        print(car_type_dict)
+        for key in car_type_dict:
+            car_summary_url = car_type_dict[key]
+            car_photo_url = car_summary_url.replace("Summary", "HDPhoto")
+            req = ss.get(url="https://c.8891.com.tw/audi/a1-sportback/HDPhoto.html", headers=myutils.get_header())
+            print(req.url)
+            # print(req.text)
+            scriptsoup = myutils.get_soup(req.text).find_all('script', type="text/javascript")
+            for script in scriptsoup:
+                print(script)
+                tmp = str(script)
+                if tmp.find("InitData") != -1:
+                    # print(tmp.index(": ["), tmp.index("]"))
+                    pid_str = tmp[tmp.index(": [") + 3: tmp.index("]")]
+                    pid_list = pid_str.split(",")
+                    print(pid_list)
+                    photo_lib_url = "https://c.8891.com.tw/photoLibrary-ajaxList.html?pid="
+                    pidstr = ""
+                    for idx, pid in enumerate(pid_list):
+                        pidstr += pid
+                        # 一次獲取多少張圖片的網址
+                        num_of_photo = 7
+                        if idx % num_of_photo == 0 or idx % len(pid_list) == 0:
+                            print(pidstr)
+                            r = ss.get(url=photo_lib_url + myutils.url_encoding(pidstr), headers=myutils.get_header())
+                            print(r.url, "photo rul result:")
+                            # print(r.text)
+                            try:
+                                json_obj = json.loads(r.text)["data"]
+                            except Exception as err:
+                                print("error ", "~"*20)
+                                print(err)
+                                print(r.text)
+
+                            for photo_json in json_obj:
+                                photo_url = photo_json["smallPic"].replace(r"\/", "/")
+                                # photo_req = ss.get(url=photo_url, headers=myutils.get_header())
+                                # file_path = photo_url[photo_url.rfind("/"):]
+                                # result = myutils.write_pic_file("./pic/8891"+file_path, photo_req.content)
+                                # print("write pic", result, "success!")
+                            print(json_obj)
+                            pidstr = ""
+                        else:
+                            pidstr += ","
+                        # break
+            break
+        break
+
+
+def main():
+    # test()
+    ss = myutils.get_session()
+    q = ss.get(url="https://auto.8891.com.tw/usedauto-infos-2445162.html", headers=myutils.get_header())
+    print(myutils.get_soup(q.text).prettify())
+    req = ss.get(url="https://p2.8891.com.tw/m223511/v9202/2020/06/23/1592916865015878_765_575_2445162.jpg", headers=myutils.get_header())
+    a = myutils.write_pic_file("./pic/123.jpg", req.content)
+    print(a)
+
 
 
 if __name__ == "__main__":
