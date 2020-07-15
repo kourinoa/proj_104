@@ -111,7 +111,7 @@ def test():
                 if b.find("/") != -1:
                     b = b[:b.find("/")]
                 pic_res = ss.get(url=pic_url, headers=myutils.get_header())
-                file_path = "./pic/{}/{}/{}".format(b, t, pic_url[pic_url.rfind("/"):])
+                file_path = "./pic/8891/{}/{}/{}".format(b, t, pic_url[pic_url.rfind("/"):])
                 a = myutils.write_pic_file(file_path=file_path, pic=pic_res.content)
                 print(a, "success")
     # print(get_pic_page_url("https://c.8891.com.tw/daihatsu/coo/Summary.html"))

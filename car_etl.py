@@ -232,14 +232,19 @@ def test():
 
 
 def main():
-    # test()
-    ss = myutils.get_session()
-    q = ss.get(url="https://auto.8891.com.tw/usedauto-infos-2445162.html", headers=myutils.get_header())
-    print(myutils.get_soup(q.text).prettify())
-    req = ss.get(url="https://p2.8891.com.tw/m223511/v9202/2020/06/23/1592916865015878_765_575_2445162.jpg",
-                 headers=myutils.get_header())
-    a = myutils.write_pic_file("./pic/123.jpg", req.content)
-    print(a)
+    try:
+        # test()
+        ss = myutils.get_session()
+        q = ss.get(url="https://auto.8891.com.tw/usedauto-infos-2445162.html", headers=myutils.get_header())
+        print(myutils.get_soup(q.text).prettify())
+        # req = ss.get(url="https://p2.8891.com.tw/m223511/v9202/2020/06/23/1592916865015878_765_575_2445162.jpg",
+        #              headers=myutils.get_header())
+        # a = myutils.write_pic_file("./pic/123.jpg", req.content)
+        # print(a)
+    except Exception as err:
+        raise err
+    finally:
+        mongo_service.close_conn()
 
 
 if __name__ == "__main__":

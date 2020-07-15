@@ -11,7 +11,12 @@ db_domain = "localhost"
 db_port = "27017"
 db_url = "mongodb://{}:{}@{}:{}/".format(db_user, db_pswd, db_domain, db_port)
 
-conn = None
+conn = None  # type: MongoClient
+
+
+def close_conn():
+    if conn is not None:
+        conn.close()
 
 
 def find_by_id(idd, db_name="data", collection="car"):
@@ -34,11 +39,21 @@ def get_mongo_conn() -> MongoClient:
     return conn
 
 
+def get_remote_mongo_conn(user=db_user, pswd=db_pswd, host=db_domain, port=db_port) -> MongoClient:
+    return MongoClient("mongodb://{}:{}@{}:{}/".format(user, pswd, host, port))
+
+
 def insert_data(db_name: str, collection: str, json_data):
     json_data["create_time"] = myutils.get_mongo_time()
     db = get_mongo_conn()[db_name]
     coll = db[collection]
     return coll.insert_one(json_data)
+
+
+def update_date(db_name: str, collection: str, json_data):
+    db = get_mongo_conn()[db_name]
+    coll = db[collection]
+    return coll.update_one({"_id": json_data["_id"]}, {"$set": json_data})
 
 
 def see_result(cursor):
@@ -76,13 +91,42 @@ def see_result(cursor):
         print(content)
 
 
+def test():
+    cursor = get_mongo_conn().data.uniform.find({"checked": {"$ne": 1}})  # .limit(10)
+    for item in cursor:
+        ################################################
+        # 檢查品牌
+        # if item["brand"] not in myutils.brand_tmp:
+        #     item["checked"] = 1
+        #     update_date("data", "uniform", item)
+        #     print(item["brand"])
+        # if item["price"] is not None:
+        #     str_price = str(item["price"])
+        #     if item["price"] > 1000:
+        #         print(item)
+        ##############################################
+        # #轉資料
+        # item = myutils.uni_form_data(item)
+        # a = insert_data("data", "uniform", item)
+        # print(a, "success")
+        #############################################
+        # 寫遠端DB
+        remote_conn = get_remote_mongo_conn(user="tibame123", pswd="tibame", host="10.120.26.31", port="27017")
+        collection = remote_conn["Allcars"]["usedcar"]
+        success = collection.insert_one(item)
+        print(success, "write success!")
+
+
+
 def main():
     # test = {"_id": "1", "name": "allen", "age": 88, "gender": "M"}
     # insert_data("data", "person", test)
-    cursor = get_mongo_conn().data.car.find({})#.limit(10)
-    for item in cursor:
-        result = insert_data("data", "uniform", myutils.uni_form_data(item))
-        print(item["_id"], "result", result, "transform success!")
+    try:
+        test()
+    except Exception as err:
+        raise err
+    finally:
+        close_conn()
     f_list = []
     e_list = []
     # for i in range(1, 20):
