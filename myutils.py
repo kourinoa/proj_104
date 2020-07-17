@@ -77,7 +77,7 @@ def uni_form_data(ori_data: dict) -> dict:
                     "天窗": "window", "HID氙氣頭燈": "hid", "恆溫空調": "air_con",
                     "六安全氣囊以上": "safe_bag", "免鑰匙啟動": "keyless", "導航系統": "gps",
                     "LED頭燈": "led", "防滑循跡系統": "trc", "車道偏移警示": "ldws",
-                    "自動煞車系統": "aeb", "定速": "ss", "抬頭顯示器": "hud"}
+                    "自動煞車系統": "aeb", "定速": "ss", "抬頭顯示器": "hud", "_id": "id"}
 
     missing_key = ["power", "l_chair", "cd", "back_radar", "abs", "alu", "tcs", "acc", "auto_windows", "auto_side",
                    "alert", "tpms", "es", "isofix", "multi_wheel", "auto_park", "people", "silde_door", "female_used",
@@ -101,16 +101,83 @@ def uni_form_data(ori_data: dict) -> dict:
                 tmp = ori_data[key]
                 try:
                     tmp = tmp.replace(",", "").strip()
-                    tmp = round(float(tmp)/10000, 1)
+                    tmp = round(float(tmp) / 10000, 1)
                 except ValueError as err:
-                    print(tmp, "_"*20)
+                    print(tmp, "_" * 20)
                     tmp = None
                     # raise err
                 uniform_data[key_mappping[key]] = tmp
     for mkey in missing_key:
         uniform_data[mkey] = None
-    uniform_data["from"] = "yahoo_by_w"
+    uniform_data["source"] = "yahoo"
     return uniform_data
+
+
+brand_tmp = ["Alfa Romeo",
+             "Aston Martin",
+             "Audi",
+             "Bentley",
+             "BMW",
+             "Bugatti",
+             "Buick",
+             "Cadillac",
+             "Chery",
+             "Chrysler",
+             "Citroen",
+             "CMC",
+             "Daihatsu",
+             "DFSK",
+             "DS",
+             "Ferrari",
+             "Fiat",
+             "Ford",
+             "Honda",
+             "Hyundai",
+             "Infiniti",
+             "IVECO",
+             "Jaguar",
+             "Kia",
+             "Koenigsegg",
+             "Lamborghini",
+             "Land Rover",
+             "Lexus",
+             "Lotus",
+             "Luxgen",
+             "Mahindra",
+             "Maserati",
+             "Mazda",
+             "McLaren",
+             "Mercedes-Benz",
+             "Mini",
+             "Mitsubishi",
+             "Morgan",
+             "Nissan",
+             "Opel",
+             "Pagani",
+             "Peugeot",
+             "Porsche",
+             "Proton",
+             "Renault",
+             "Rolls-Royce",
+             "Saab",
+             "Skoda",
+             "Smart",
+             "Ssangyong",
+             "Subaru",
+             "Suzuki",
+             "Tesla",
+             "Tobe",
+             "Toyota",
+             "Volkswagen",
+             "Volvo",
+             "Chevrolet",
+             "Dodge",
+             "Formosa",
+             "Hummer",
+             "Isuzu",
+             "Jeep",
+             "Volkswagen Commercial Vehicles"
+             ]
 
 
 def main():
