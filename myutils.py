@@ -34,6 +34,10 @@ def get_mongo_time() -> datetime.datetime.utcnow:
     return datetime.datetime.utcnow()
 
 
+def str_to_mongo_time(year, month, day, hour, minutes, sec) -> datetime.datetime:
+    return datetime.datetime(int(year), int(month), int(day), int(hour), int(minutes), int(sec))
+
+
 def get_datetime_str() -> str:
     '''
     取得當前時間，mysql格式
@@ -190,8 +194,7 @@ def main():
     #         tmp = ""
     #     else:
     #         tmp += ","
-    a = "adbdd"
-    print(a[:a.find("/")])
+    print(str_to_mongo_time("2020", "7", "12", "12", "59", "0"))
 
 
 if __name__ == "__main__":
