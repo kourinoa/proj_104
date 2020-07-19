@@ -227,6 +227,12 @@ def yahoo_car():
 
 
 
+def car_brand_mapping(brand_str: str) -> str:
+    brand_dict = {"4 Runner": "4RUNNER", "4runner": "4RUNNER", "Toyota 86": "86", "Altis": "ALTIS",
+                  "Toyota Altis": "ALTIS", "Alphard": "ALPHARD", "Toyota Alphard": "ALPHARD", "Auris": "AURIS",
+                  "Avalon": "AVALON", "Toyota Avalon": "AVALON", "Toyota C-HR": "C-HR"}
+
+
 def test():
     yahoo_car()
 
