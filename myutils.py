@@ -4,6 +4,19 @@ import json
 import os
 from urllib import parse
 from bs4 import BeautifulSoup
+import logging
+
+
+def get_logger(log_name=__name__, log_file_path="mylog.log"):
+    log_path = "./log/"
+    if not os.path.exists(log_path):
+        os.makedirs(log_path)
+    handle = logging.FileHandler(filename=log_path + log_file_path, mode="a", encoding='utf-8')
+    handle.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
+    logger = logging.getLogger(name=log_name)
+    logger.setLevel(level=logging.INFO)
+    logger.addHandler(handle)
+    return logger
 
 
 def url_encoding(url: str) -> str:
@@ -73,7 +86,7 @@ def write_text_file(file_path: str, content):
 
 
 def uni_form_data(ori_data: dict) -> dict:
-    key_mappping = {"廠牌": "brand", "型號a": "type", "mlink": "link",
+    key_mappping = {"廠牌": "brand", "型號": "type", "mlink": "link",
                     "排氣量": "cc", "引擎燃料": "gas", "變速系統": "sys",
                     "外觀車色": "color", "auto_drive_km": "miles", "auto_build_year": "year",
                     "price": "price", "location": "locate", "poster": "seller",
@@ -194,7 +207,11 @@ def main():
     #         tmp = ""
     #     else:
     #         tmp += ","
-    print(str_to_mongo_time("2020", "7", "12", "12", "59", "0"))
+    # print(str_to_mongo_time("2020", "7", "12", "12", "59", "0"))
+    test = "我的"
+    with open("./dict/a.txt", "wb") as f:
+        test = test.encode("utf-8")
+        f.write(test)
 
 
 if __name__ == "__main__":

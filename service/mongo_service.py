@@ -12,7 +12,7 @@ db_port = "27017"
 db_url = "mongodb://{}:{}@{}:{}/".format(db_user, db_pswd, db_domain, db_port)
 
 conn = None  # type: MongoClient
-
+logger = myutils.get_logger(log_name="mongo_service")
 
 def close_conn():
     if conn is not None:
@@ -29,7 +29,7 @@ def find_by_id(idd, db_name="data", collection="car"):
 def is_exist(idd, db_name="data", collection="car"):
     db = get_mongo_conn()[db_name]
     coll = db[collection]
-    return coll.find_one({"_id": idd}, {"_id": 1})
+    return coll.find_one({"_id": idd}, {"_id": 1}) is not None
 
 
 def get_mongo_conn() -> MongoClient:
@@ -92,8 +92,9 @@ def see_result(cursor):
 
 
 def test():
-    cursor = get_mongo_conn().data.uniform.find({"checked": {"$ne": 1}})  # .limit(10)
-    for item in cursor:
+    remote_conn = get_remote_mongo_conn(user="tibame123", pswd="tibame", host="10.120.26.31", port="27017")
+    # cursor = get_mongo_conn().data.uniform.find({"checked": {"$ne": 1}})  # .limit(10)
+    # for item in cursor:
         ################################################
         # 檢查品牌
         # if item["brand"] not in myutils.brand_tmp:
@@ -111,10 +112,53 @@ def test():
         # print(a, "success")
         #############################################
         # 寫遠端DB
-        remote_conn = get_remote_mongo_conn(user="tibame123", pswd="tibame", host="10.120.26.31", port="27017")
-        collection = remote_conn["Allcars"]["usedcar"]
-        success = collection.insert_one(item)
-        print(success, "write success!")
+        # collection = remote_conn["Allcars"]["usedcar"]
+        # success = collection.insert_one(item)
+        # print(success, "write success!")
+        #############################################
+        # 修復本地型號
+
+    coll = get_mongo_conn()["data"]["car"]
+    cursor = coll.find({"廠牌": "Mercedes-Benz[sl]賓士"}, {"型號": 1, "型號a": 1})
+    count = 0
+    for car in cursor:
+        if car.get("型號", None) is None:
+            update_data = {"_id": car["_id"], "型號": "fix_" + car["型號a"]}
+            # print(update_data)
+            # result = update_date("data", "car", update_data)
+            logger.warn(str(car) + "no type")
+        else:
+            remote_coll = remote_conn["Allcars"]["usedcar_copy"]
+            rcursor = remote_coll.find({"id": car["_id"], "source": "yahoo"})
+            # print(rcursor.count(), "  ", rcursor)
+            if rcursor.count() > 1:
+                logger.warn("id: " + car["_id"] + "more than one data")
+            else:
+                remote_car = rcursor.next()
+                type_str = car["型號"]
+                if type_str.find("fix_") != -1:
+                    type_str = type_str[4:]
+                update_data2 = {"type": type_str}
+                logger.info("update id: " + str(remote_car["_id"]) + " to " + str(update_data2))
+                remote_coll.update({"_id": remote_car["_id"]}, {"$set": update_data2})
+        # count += 1
+        # if count == 10:
+        #     break
+
+
+def update_8891_car_type():
+    # 取得公共資料庫中的8891 id，存入本地mongodb
+    remote_conn = get_remote_mongo_conn(user="tibame123", pswd="tibame", host="10.120.26.31", port="27017")
+    collection = remote_conn["Allcars"]["usedcar_copy"]
+    cursor = collection.find({"brand": "Mercedes-Benz", "source": "8891"}, {"_id": 1, "id": 1})
+    start_time = datetime.datetime.now()
+    for item in cursor:
+        if not is_exist(item["id"], collection="8891"):
+            result = insert_data("data", "8891", {"_id": item["id"]})
+            print(result, "insert data success!")
+        else:
+            print(item["id"], "already exist!")
+    print("spend time :", datetime.datetime.now() - start_time)
 
 
 
@@ -123,6 +167,7 @@ def main():
     # insert_data("data", "person", test)
     try:
         test()
+        # update_8891_car_type()
     except Exception as err:
         raise err
     finally:
@@ -145,6 +190,9 @@ def main():
     # for key in cursor:
     #     if type(cursor[key]) != str:
     #         print(key, type(cursor[key]))
+
+
+
 
 
 if __name__ == "__main__":

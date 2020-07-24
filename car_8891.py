@@ -1,5 +1,8 @@
 import myutils
 import json
+import service.mongo_service as mongo_service
+
+logger = myutils.get_logger("car_8891", "8891.log")
 
 
 def get_new_car_brand():
@@ -72,7 +75,8 @@ def get_new_car_pic(url: str):
                 if idx % num_of_photo == 0 or idx % len(pid_list) == 0:
                     # print(pidstr)
                     # 向https://c.8891.com.tw/photoLibrary-ajaxList.html 發出請求
-                    r = ss.get(url=photo_lib_url + myutils.url_encoding(pidstr), headers=myutils.get_header())  # 網址裡的,需要轉換編碼
+                    r = ss.get(url=photo_lib_url + myutils.url_encoding(pidstr),
+                               headers=myutils.get_header())  # 網址裡的,需要轉換編碼
                     # print(r.url, "photo rul result:")
                     # print(r.text)
                     try:
@@ -91,30 +95,64 @@ def get_new_car_pic(url: str):
     return pic_url_list
 
 
-def test():
+def get_used_car_page(url):
+    logger.info("{} get url:{}".format(__name__, url))
     ss = myutils.get_session()
-    new_car_brand_list = get_new_car_brand()
-    print(new_car_brand_list)
-    count = 0
-    for brand in new_car_brand_list:
-        car_type_dict = get_new_car_type(brand["link"])
-        print(car_type_dict)
-        count += 1
-        if count == 2:
-            break
-        for t in car_type_dict:
-            pic_url_list = get_new_car_pic(get_pic_page_url(car_type_dict[t]))
-            print(t, "_" * 30)
-            print(pic_url_list)
-            for pic_url in pic_url_list:
-                b = brand["brand"]
-                if b.find("/") != -1:
-                    b = b[:b.find("/")]
-                pic_res = ss.get(url=pic_url, headers=myutils.get_header())
-                file_path = "./pic/8891/{}/{}/{}".format(b, t, pic_url[pic_url.rfind("/"):])
-                a = myutils.write_pic_file(file_path=file_path, pic=pic_res.content)
-                print(a, "success")
+    res = ss.get(url=url, headers=myutils.get_header())
+    soup = myutils.get_soup(res.text)
+    logger.info(str(soup.prettify()))
+    car = {}
+    car_type = soup.select("div.breadcrumb a.NormalLink")
+    print(car_type)
+    car["brand"] = car_type[2].text
+    if len(car_type) >= 5:
+        car["type"] = car_type[4].text
+    car["type2"] = car_type[3].text
+    car["title"] = soup.select_one("div.right-info info-right-width div.infos-head-title span").text
+    car["price"] = soup.select_one("div.car-price-box div#price b").text
+
+
+
+
+
+
+def test():
+    ################################################################
+    # 新車抓圖範例
+    # ss = myutils.get_session()
+    # new_car_brand_list = get_new_car_brand()
+    # print(new_car_brand_list)
+    # count = 0
+    # for brand in new_car_brand_list:
+    #     car_type_dict = get_new_car_type(brand["link"])
+    #     print(car_type_dict)
+    #     count += 1
+    #     if count == 2:
+    #         break
+    #     for t in car_type_dict:
+    #         pic_url_list = get_new_car_pic(get_pic_page_url(car_type_dict[t]))
+    #         print(t, "_" * 30)
+    #         print(pic_url_list)
+    #         for pic_url in pic_url_list:
+    #             b = brand["brand"]
+    #             if b.find("/") != -1:
+    #                 b = b[:b.find("/")]
+    #             pic_res = ss.get(url=pic_url, headers=myutils.get_header())
+    #             file_path = "./pic/8891/{}/{}/{}".format(b, t, pic_url[pic_url.rfind("/"):])
+    #             a = myutils.write_pic_file(file_path=file_path, pic=pic_res.content)
+    #             print(a, "success")
+    ###########################################################################
     # print(get_pic_page_url("https://c.8891.com.tw/daihatsu/coo/Summary.html"))
+    local_conn = mongo_service.get_mongo_conn()
+    local_coll = local_conn["data"]["8891"]
+    cursor = local_coll.find({})
+
+    domain = "https://auto.8891.com.tw/"
+
+    for idd in cursor:
+        url = "{}usedauto-infos-{}.html".format(domain, str(idd["_id"]))
+        get_used_car_page(url)
+        break
 
 
 def main():

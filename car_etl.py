@@ -105,7 +105,7 @@ def car_search(ss, url, cata, total_car_num, kw):
             # raise err
         try:
             for car in json_data["data"][1:]:
-                if mongo_service.is_exist(car["mid"]) is not None:
+                if not mongo_service.is_exist(car["mid"]):
                     print("cat id {} already existed".format(car["mid"]))
                     continue
                 url = car["mlink"]
@@ -120,6 +120,7 @@ def car_search(ss, url, cata, total_car_num, kw):
                 car["廠牌"] = car_brand[2].replace("/", "[sl]")
                 if len(car_brand) > 3:
                     car["型號a"] = car_brand[3]
+                    car["型號"] = "fix_" + car_brand[3]
                     if len(car_brand) > 4:
                         car["型號"] = car_brand[4]
                 # 車輛狀態
@@ -226,23 +227,76 @@ def yahoo_car():
         search_page("000000515224", input_data, action, url, ss, kw=brand)
 
 
+def car_type_mapping() -> dict:
+    type_dict = \
+        {
+            "Toyota":
+                {"4 Runner": "4RUNNER", "4runner": "4RUNNER", "Toyota 86": "86", "Altis": "ALTIS",
+                 "Toyota Altis": "ALTIS", "Alphard": "ALPHARD", "Toyota Alphard": "ALPHARD", "Auris": "AURIS",
+                 "Avalon": "AVALON", "Toyota Avalon": "AVALON", "Toyota C-HR": "C-HR", "Camry": "CAMRY",
+                 "Camry Hybird": "CAMRY HYBRID", "Camry Hybrid": "CAMRY HYBRID", "Corolla": "COROLLA",
+                 "Corolla Altis": "ALTIS", "Corolla Altis X": "ALTIS", "Corolla Sport": "COROLLA SPORT",
+                 "Corona": "CORONA", "Crown": "CROWN", "Dyna": "DYNA", "Exsior": "EXSIOR",
+                 "FJ Cruiser": "FJ CRUISER", "Fj Cruiser": "FJ CRUISER", "Granvia": "GRANVIA", "Hiace": "HIACE",
+                 "Hiace Solemio": "HIACE SOLEMIO", "HighLander": "HIGHLANDER", "Highlander": "HIGHLANDER",
+                 "Hilux": "HILUX",
+                 "Innova": "INNOVA", "Land Cruiser": "LAND CRUISER", "Pick up": "HILUX", "Premio": "PREMIO",
+                 "Previa": "PREVIA", "Prius": "PRIUS", "Prius Alpha": "PRIUS ALPHA", "Prius α": "PRIUS ALPHA",
+                 "Prius C": "PRIUS c", "Prius PHV": "PRIUS PHV", "Sequoia": "SEQUOIA", "Sienna": "SIENNA",
+                 "Sienta": "SIENTA", "Supra": "SUPRA", "Surf": "ZACE SURF", "Tacoma": "TACOMA",
+                 "Tercel": "TERCEL", "Toyota Auris": "AURIS", "Toyota Camry": "CAMRY", "Toyota Corolla": "COROLLA",
+                 "Toyota FJ Cruiser": "FJ CRUISER", "Toyota Hiace Solimo": "HIACE SOLEMIO", "Toyota Innova": "INNOVA",
+                 "Toyota Premio": "PREMIO",
+                 "Toyota Previa": "PREVIA", "Toyota Prius": "PRIUS", "Toyota Prius c": "PRIUS c",
+                 "Toyota RAV-4": "RAV4",
+                 "Toyota Sienna": "SIENNA", "Toyota Sienta": "SIENTA", "Toyota Solara": "Solara",
+                 "Toyota Tacoma": "TACOMA",
+                 "Toyota Tercel": "TERCEL", "Toyota Tundra": "TUNDRA", "Toyota Vios": "VIOS", "Tundra": "TUNDRA",
+                 "Toyota Wish": "WISH", "Toyota Yaris": "YARIS", "Toyota Zace": "ZACE", "Toyota Zace Surf": "ZACE SURF",
+                 "Vios": "VIOS", "Wish": "WISH", "Yaris": "YARIS", "Zace": "ZACE",
+                 "alphard": "ALPHARD", "altis": "ALTIS", "auris": "AURIS", "c-hr": "C-HR", "camry": "CAMRY",
+                 "camry hybrid": "CAMRY HYBRID", "corolla": "COROLLA", "hiace": "HIACE", "innova": "INNOVA",
+                 "premio": "PREMIO", "previa": "PREVIA", "prius": "PRIUS", "prius c": "PRIUS c",
+                 "rav4": "RAV4", "sienna": "SIENNA", "sienta": "SIENTA", "tacoma": "TACOMA",
+                 "tercel": "TERCEL", "vios": "VIOS", "wish": "WISH", "yaris": "YARIS",
+                 "zace": "ZACE", "zace surf": "ZACE SURF"}
+        }
+    return type_dict
 
-def car_brand_mapping(brand_str: str) -> str:
-    brand_dict = {"4 Runner": "4RUNNER", "4runner": "4RUNNER", "Toyota 86": "86", "Altis": "ALTIS",
-                  "Toyota Altis": "ALTIS", "Alphard": "ALPHARD", "Toyota Alphard": "ALPHARD", "Auris": "AURIS",
-                  "Avalon": "AVALON", "Toyota Avalon": "AVALON", "Toyota C-HR": "C-HR"}
+
+def transform_type():
+    conn = mongo_service.get_remote_mongo_conn(user="tibame123", pswd="tibame", host="10.120.26.31", port="27017")
+    coll = conn["Allcars"]["usedcar_copy"]
+    type_mapping = car_type_mapping()
+    count = 0
+    logger = myutils.get_logger(log_name="car type transform")
+    for brand in type_mapping:
+        print("type mapping get brand: ", brand)
+        mapping = type_mapping[brand]
+        for key in mapping:
+            print("finding type : ", key)
+            corsur = coll.find({"brand": brand, "type": key})
+            for item in corsur:
+                # print(item)
+                logger.info(item)
+                item["type"] = mapping[key]
+                logger.info("to")
+                logger.info(item)
+                result = coll.update_one(filter={"_id": item["_id"]}, update={"$set": {"type": mapping[key]}})
+                logger.info(str(result) + " update success!")
 
 
 def test():
-    yahoo_car()
+    # yahoo_car()
+    transform_type()
 
 
 def main():
     try:
-        # test()
-        ss = myutils.get_session()
-        q = ss.get(url="https://auto.8891.com.tw/usedauto-infos-2445162.html", headers=myutils.get_header())
-        print(myutils.get_soup(q.text).prettify())
+        test()
+        # ss = myutils.get_session()
+        # q = ss.get(url="https://auto.8891.com.tw/usedauto-infos-2445162.html", headers=myutils.get_header())
+        # print(myutils.get_soup(q.text).prettify())
         # req = ss.get(url="https://p2.8891.com.tw/m223511/v9202/2020/06/23/1592916865015878_765_575_2445162.jpg",
         #              headers=myutils.get_header())
         # a = myutils.write_pic_file("./pic/123.jpg", req.content)
