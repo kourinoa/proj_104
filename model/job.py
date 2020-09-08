@@ -5,7 +5,6 @@ import datetime
 
 
 class Job(declarative_base()):
-
     __tablename__ = 'job'
     id = Column(String, primary_key=True)
     name = Column(String)
@@ -16,7 +15,6 @@ class Job(declarative_base()):
     create_time = Column(DateTime, default=datetime.datetime.utcnow())
     modify_time = Column(DateTime)
     create_user = Column(String)
-
 
     """
     CREATE TABLE `data`.`job`  (

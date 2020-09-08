@@ -50,6 +50,14 @@ def insert_data(db_name: str, collection: str, json_data):
     return coll.insert_one(json_data)
 
 
+def insert_many(db_name: str, collection: str, json_data: list):
+    for data in json_data:
+        data["create_time"] = myutils.get_mongo_time()
+    db = get_mongo_conn()[db_name]
+    coll = db[collection]
+    return coll.insert_many(json_data)
+
+
 def update_date(db_name: str, collection: str, json_data):
     db = get_mongo_conn()[db_name]
     coll = db[collection]
@@ -115,7 +123,6 @@ def test():
         collection = remote_conn["Allcars"]["usedcar"]
         success = collection.insert_one(item)
         print(success, "write success!")
-
 
 
 def main():
