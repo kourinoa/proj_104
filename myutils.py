@@ -27,7 +27,7 @@ def get_soup(html: str) -> BeautifulSoup:
     return BeautifulSoup(html, "html.parser")
 
 
-def get_session() -> requests.session:
+def get_session() -> requests.sessions.Session:
     return requests.session()
 
 
